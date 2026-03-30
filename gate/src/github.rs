@@ -1,4 +1,5 @@
-use crate::engine::{EvalVerdict, Verdict};
+use crate::config::Verdict;
+use crate::engine::EvalVerdict;
 
 pub async fn set_status(_token: &str, _verdict: Verdict, _description: &str) {}
 pub async fn post_pr_comment(_token: &str, _verdict: &EvalVerdict) {}

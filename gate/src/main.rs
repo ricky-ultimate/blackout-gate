@@ -9,6 +9,8 @@ mod override_token;
 mod pagerduty;
 mod slack;
 
+use config::Verdict;
+
 #[tokio::main]
 async fn main() {
     let cfg_path = env::var("INPUT_CONFIG").unwrap_or(".blackout/blackout.yaml".into());
@@ -34,12 +36,7 @@ async fn main() {
     if let Some(token) = &override_token {
         if override_token::validate(token, &api_url, &api_key, &verdict).await {
             audit::record(&api_url, &api_key, &verdict, audit::Action::Overridden).await;
-            github::set_status(
-                &github_token,
-                engine::Verdict::Allowed,
-                "Override approved.",
-            )
-            .await;
+            github::set_status(&github_token, Verdict::Allow, "Override approved.").await;
             process::exit(0);
         }
     }
@@ -48,16 +45,11 @@ async fn main() {
 
     match verdict.outcome {
         engine::Outcome::Allowed => {
-            github::set_status(
-                &github_token,
-                engine::Verdict::Allowed,
-                "No active blackout windows.",
-            )
-            .await;
+            github::set_status(&github_token, Verdict::Allow, "No active blackout windows.").await;
             process::exit(0);
         }
         engine::Outcome::Warn => {
-            github::set_status(&github_token, engine::Verdict::Warn, &verdict.reason).await;
+            github::set_status(&github_token, Verdict::Warn, &verdict.reason).await;
             github::post_pr_comment(&github_token, &verdict).await;
             if let Some(ref webhook) = slack_webhook {
                 slack::notify(webhook, &verdict).await;
@@ -65,7 +57,7 @@ async fn main() {
             process::exit(0);
         }
         engine::Outcome::Blocked => {
-            github::set_status(&github_token, engine::Verdict::Blocked, &verdict.reason).await;
+            github::set_status(&github_token, Verdict::Block, &verdict.reason).await;
             github::post_pr_comment(&github_token, &verdict).await;
             if let Some(ref webhook) = slack_webhook {
                 slack::notify(webhook, &verdict).await;
