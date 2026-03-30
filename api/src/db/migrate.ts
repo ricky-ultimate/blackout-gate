@@ -1,4 +1,4 @@
-import { client } from "./client.ts";
+import { db } from "./client.js";
 
 const sql = `
   CREATE TABLE IF NOT EXISTS organizations (
@@ -49,10 +49,14 @@ const sql = `
 `;
 
 async function migrate() {
-  await client.connect();
-  await client.query(sql);
-  await client.end();
-  console.log("Migration complete.");
+  const client = await db.connect();
+  try {
+    await client.query(sql);
+    console.log("Migration complete.");
+  } finally {
+    client.release();
+    await db.end();
+  }
 }
 
 migrate().catch((err) => {
