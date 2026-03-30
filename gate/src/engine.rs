@@ -56,10 +56,14 @@ pub fn evaluate(
                 let matched = match recurrence.kind {
                     RecurrenceType::Range => {
                         let start = recurrence.start.as_deref().and_then(|s| {
-                            DateTime::parse_from_rfc3339(s).ok().map(|d| d.with_timezone(&Utc))
+                            DateTime::parse_from_rfc3339(s)
+                                .ok()
+                                .map(|d| d.with_timezone(&Utc))
                         });
                         let end = recurrence.end.as_deref().and_then(|s| {
-                            DateTime::parse_from_rfc3339(s).ok().map(|d| d.with_timezone(&Utc))
+                            DateTime::parse_from_rfc3339(s)
+                                .ok()
+                                .map(|d| d.with_timezone(&Utc))
                         });
                         match (start, end) {
                             (Some(s), Some(e)) => now_utc >= s && now_utc <= e,
@@ -72,10 +76,10 @@ pub fn evaluate(
                             exprs.iter().any(|expr| {
                                 Schedule::from_str(expr).ok().map_or(false, |schedule| {
                                     let window_end = now_utc + Duration::minutes(duration);
-                                    schedule
-                                        .upcoming(tz)
-                                        .take(1)
-                                        .any(|t| t.with_timezone(&Utc) >= now_utc && t.with_timezone(&Utc) <= window_end)
+                                    schedule.upcoming(tz).take(1).any(|t| {
+                                        t.with_timezone(&Utc) >= now_utc
+                                            && t.with_timezone(&Utc) <= window_end
+                                    })
                                 })
                             })
                         })
