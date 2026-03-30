@@ -2,6 +2,7 @@ use serde::Deserialize;
 use std::collections::HashMap;
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct BlackoutConfig {
     pub version: String,
     pub org: String,
@@ -12,6 +13,7 @@ pub struct BlackoutConfig {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct Defaults {
     pub verdict_on_match: Verdict,
     pub allow_override: bool,
@@ -28,22 +30,26 @@ pub enum Verdict {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct Approver {
     pub github: String,
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct NotifyConfig {
     pub slack: Vec<SlackChannel>,
     pub pr_comment: bool,
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct SlackChannel {
     pub channel: String,
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct Window {
     pub id: String,
     pub name: String,
@@ -58,6 +64,7 @@ pub struct Window {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct Recurrence {
     #[serde(rename = "type")]
     pub kind: RecurrenceType,
@@ -75,6 +82,7 @@ pub enum RecurrenceType {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ExternalSource {
     #[serde(rename = "type")]
     pub kind: String,
@@ -83,6 +91,7 @@ pub struct ExternalSource {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct EnvironmentConfig {
     pub applies_to: Vec<String>,
     pub windows: Vec<String>,
