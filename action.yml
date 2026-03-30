@@ -1,0 +1,51 @@
+name: "Blackout-Aware Deployment Gate"
+description: "Blocks or warns deployments during configured blackout windows."
+author: "your-org"
+
+inputs:
+  config:
+    description: "Path to blackout.yaml"
+    required: false
+    default: ".blackout/blackout.yaml"
+  environment:
+    description: "Target environment (production, staging, development)"
+    required: true
+  api-url:
+    description: "Blackout Gate API base URL"
+    required: true
+  api-key:
+    description: "Blackout Gate API key"
+    required: true
+  github-token:
+    description: "GitHub token for posting PR statuses and comments"
+    required: true
+  slack-webhook:
+    description: "Slack incoming webhook URL"
+    required: false
+  pagerduty-api-key:
+    description: "PagerDuty API key for maintenance window sync"
+    required: false
+  override-token:
+    description: "Token issued by approver to bypass a block"
+    required: false
+
+outputs:
+  verdict:
+    description: "Gate verdict: allowed, blocked, or warn"
+  window-id:
+    description: "ID of the matched blackout window if blocked"
+  reason:
+    description: "Human-readable reason for the verdict"
+
+runs:
+  using: "docker"
+  image: "docker://ghcr.io/your-org/blackout-gate-action:v1"
+  env:
+    INPUT_CONFIG: ${{ inputs.config }}
+    INPUT_ENVIRONMENT: ${{ inputs.environment }}
+    INPUT_API_URL: ${{ inputs.api-url }}
+    INPUT_API_KEY: ${{ inputs.api-key }}
+    INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+    INPUT_SLACK_WEBHOOK: ${{ inputs.slack-webhook }}
+    INPUT_PAGERDUTY_API_KEY: ${{ inputs.pagerduty-api-key }}
+    INPUT_OVERRIDE_TOKEN: ${{ inputs.override-token }}

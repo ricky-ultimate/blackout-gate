@@ -1,0 +1,37 @@
+name: Blackout Gate
+
+on:
+  push:
+    branches:
+      - main
+      - release/**
+      - staging
+  pull_request:
+    branches:
+      - main
+      - release/**
+
+permissions:
+  contents: read
+  statuses: write
+  pull-requests: write
+
+jobs:
+  blackout-check:
+    name: Blackout Gate Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Blackout Gate
+        uses: your-org/blackout-gate-action@v1
+        with:
+          config: ".blackout/blackout.yaml"
+          environment: "production"
+          api-url: ${{ secrets.BLACKOUT_API_URL }}
+          api-key: ${{ secrets.BLACKOUT_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          slack-webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          pagerduty-api-key: ${{ secrets.PAGERDUTY_API_KEY }}
+          override-token: ${{ secrets.BLACKOUT_OVERRIDE_TOKEN }}
