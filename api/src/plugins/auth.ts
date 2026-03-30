@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import fp from "fastify-plugin";
-import { db } from "../db/client";
-import { hashToken } from "../lib/token";
+import { db } from "../db/client.js";
+import { hashToken } from "../lib/token.js";
 
 async function authPlugin(app: FastifyInstance) {
   app.decorate(

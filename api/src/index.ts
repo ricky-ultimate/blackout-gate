@@ -1,9 +1,9 @@
 import "dotenv/config";
 import Fastify from "fastify";
-import authPlugin from "./plugins/auth.ts";
-import { evaluateRoutes } from "./routes/evaluate.ts";
-import { overrideRoutes } from "./routes/override.ts";
-import { auditRoutes } from "./routes/audit.ts";
+import authPlugin from "./plugins/auth.js";
+import { evaluateRoutes } from "./routes/evaluate.js";
+import { overrideRoutes } from "./routes/override.js";
+import { auditRoutes } from "./routes/audit.js";
 
 const app = Fastify({ logger: true });
 

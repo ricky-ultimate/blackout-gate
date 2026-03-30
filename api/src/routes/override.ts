@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
-import { db } from "../db/client.ts";
-import { generateToken, hashToken } from "../lib/token.ts";
+import { db } from "../db/client.js";
+import { generateToken, hashToken } from "../lib/token.js";
 
 interface IssueOverrideBody {
   window_id: string;

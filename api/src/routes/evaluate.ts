@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { db } from "../db/client";
+import { db } from "../db/client.js";
 
 interface EvaluateBody {
   repo: string;

@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { db } from "../db/client.ts";
+import { db } from "../db/client.js";
 
 export async function auditRoutes(app: FastifyInstance) {
   app.get(
