@@ -3,26 +3,30 @@
 import { useState } from "react";
 import { addMonths, subMonths, format } from "date-fns";
 import { BlackoutCalendar } from "@/components/BlackoutCalendar";
-
-const EXAMPLE_WINDOWS = [
-  {
-    id: "q1-freeze",
-    name: "Q1 Freeze",
-    start: "2026-03-28T00:00:00",
-    end: "2026-03-31T23:59:59",
-    verdict: "block" as const,
-  },
-  {
-    id: "black-friday",
-    name: "Black Friday",
-    start: "2026-11-27T00:00:00",
-    end: "2026-11-30T23:59:59",
-    verdict: "block" as const,
-  },
-];
+import { useWindows } from "@/hooks/useConfig";
 
 export default function WindowsPage() {
   const [month, setMonth] = useState(new Date());
+  const { data, isLoading } = useWindows();
+
+  const windows = (data?.windows ?? []).flatMap((w) => {
+    if (
+      w.recurrence?.type === "range" &&
+      w.recurrence.start &&
+      w.recurrence.end
+    ) {
+      return [
+        {
+          id: w.id,
+          name: w.name,
+          start: w.recurrence.start,
+          end: w.recurrence.end,
+          verdict: w.verdict,
+        },
+      ];
+    }
+    return [];
+  });
 
   return (
     <div className="flex flex-col gap-10">
@@ -49,7 +53,14 @@ export default function WindowsPage() {
         </div>
       </div>
 
-      <BlackoutCalendar month={month} windows={EXAMPLE_WINDOWS} />
+      {isLoading && <p className="text-sm text-zinc-400">Loading windows...</p>}
+      {!isLoading && windows.length === 0 && (
+        <p className="text-sm text-zinc-400">
+          No range windows configured. Upload your blackout.yaml in Settings.
+        </p>
+      )}
+
+      <BlackoutCalendar month={month} windows={windows} />
 
       <div className="flex items-center gap-6 text-sm text-zinc-500 mt-2">
         <span className="flex items-center gap-2">
