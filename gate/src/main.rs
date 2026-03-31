@@ -24,6 +24,8 @@ async fn main() {
 
     let config = config::load(&cfg_path).expect("Failed to load blackout.yaml");
 
+    let ref_name = env::var("GITHUB_REF_NAME").unwrap_or_default();
+
     let pd_windows = match pagerduty_key {
         Some(ref key) => pagerduty::fetch_maintenance_windows(&config, key)
             .await
@@ -31,7 +33,13 @@ async fn main() {
         None => vec![],
     };
 
-    let verdict = engine::evaluate(&config, &environment, &pd_windows);
+    let verdict = engine::evaluate(&config, &environment, &ref_name, &pd_windows);
+
+    let window_notify = verdict
+        .window_id
+        .as_ref()
+        .and_then(|id| config.windows.iter().find(|w| &w.id == id))
+        .map(|w| &w.notify);
 
     if let Some(token) = &override_token {
         if override_token::validate(token, &api_url, &api_key, &verdict).await {
@@ -50,17 +58,23 @@ async fn main() {
         }
         engine::Outcome::Warn => {
             github::set_status(&github_token, Verdict::Warn, &verdict.reason).await;
-            github::post_pr_comment(&github_token, &verdict).await;
+            if window_notify.map(|n| n.pr_comment).unwrap_or(true) {
+                github::post_pr_comment(&github_token, &verdict).await;
+            }
             if let Some(ref webhook) = slack_webhook {
-                slack::notify(webhook, &verdict).await;
+                let channels = window_notify.map(|n| n.slack.as_slice()).unwrap_or(&[]);
+                slack::notify(webhook, &verdict, channels).await;
             }
             process::exit(0);
         }
         engine::Outcome::Blocked => {
             github::set_status(&github_token, Verdict::Block, &verdict.reason).await;
-            github::post_pr_comment(&github_token, &verdict).await;
+            if window_notify.map(|n| n.pr_comment).unwrap_or(true) {
+                github::post_pr_comment(&github_token, &verdict).await;
+            }
             if let Some(ref webhook) = slack_webhook {
-                slack::notify(webhook, &verdict).await;
+                let channels = window_notify.map(|n| n.slack.as_slice()).unwrap_or(&[]);
+                slack::notify(webhook, &verdict, channels).await;
             }
             process::exit(1);
         }

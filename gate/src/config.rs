@@ -36,23 +36,21 @@ pub struct Approver {
 }
 
 #[derive(Debug, Deserialize)]
-#[allow(dead_code)]
 pub struct NotifyConfig {
     pub slack: Vec<SlackChannel>,
     pub pr_comment: bool,
 }
 
 #[derive(Debug, Deserialize)]
-#[allow(dead_code)]
 pub struct SlackChannel {
     pub channel: String,
 }
 
 #[derive(Debug, Deserialize)]
-#[allow(dead_code)]
 pub struct Window {
     pub id: String,
     pub name: String,
+    #[allow(dead_code)]
     pub industry_template: Option<String>,
     pub recurrence: Option<Recurrence>,
     pub source: Option<ExternalSource>,
@@ -64,7 +62,6 @@ pub struct Window {
 }
 
 #[derive(Debug, Deserialize)]
-#[allow(dead_code)]
 pub struct Recurrence {
     #[serde(rename = "type")]
     pub kind: RecurrenceType,
@@ -82,16 +79,15 @@ pub enum RecurrenceType {
 }
 
 #[derive(Debug, Deserialize)]
-#[allow(dead_code)]
 pub struct ExternalSource {
     #[serde(rename = "type")]
     pub kind: String,
     pub service_ids: Option<Vec<String>>,
+    #[allow(dead_code)]
     pub auth_secret: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
-#[allow(dead_code)]
 pub struct EnvironmentConfig {
     pub applies_to: Vec<String>,
     pub windows: Vec<String>,

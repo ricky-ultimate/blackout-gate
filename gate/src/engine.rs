@@ -22,9 +22,19 @@ pub struct EvalVerdict {
     pub override_approvers: Vec<String>,
 }
 
+fn branch_matches(pattern: &str, branch: &str) -> bool {
+    if pattern.ends_with("/*") {
+        let prefix = &pattern[..pattern.len() - 2];
+        branch.starts_with(&format!("{}/", prefix))
+    } else {
+        pattern == branch
+    }
+}
+
 pub fn evaluate(
     config: &BlackoutConfig,
     environment: &str,
+    branch: &str,
     external_windows: &[String],
 ) -> EvalVerdict {
     let tz: Tz = config.timezone.parse().unwrap_or(chrono_tz::UTC);
@@ -43,6 +53,25 @@ pub fn evaluate(
             };
         }
     };
+
+    if !branch.is_empty()
+        && !env_config
+            .applies_to
+            .iter()
+            .any(|p| branch_matches(p, branch))
+    {
+        return EvalVerdict {
+            outcome: Outcome::Allowed,
+            window_id: None,
+            window_name: None,
+            reason: format!(
+                "Branch '{}' is not subject to environment '{}' gates.",
+                branch, environment
+            ),
+            allow_override: false,
+            override_approvers: vec![],
+        };
+    }
 
     for window_id in &env_config.windows {
         if external_windows.contains(window_id) {

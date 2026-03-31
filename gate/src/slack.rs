@@ -1,10 +1,12 @@
 use reqwest::Client;
 use serde::Serialize;
 
+use crate::config::SlackChannel;
 use crate::engine::{EvalVerdict, Outcome};
 
 #[derive(Serialize)]
 struct SlackPayload {
+    channel: String,
     text: String,
     blocks: Vec<SlackBlock>,
 }
@@ -23,7 +25,7 @@ struct SlackText {
     text: String,
 }
 
-pub async fn notify(webhook: &str, verdict: &EvalVerdict) {
+pub async fn notify(webhook: &str, verdict: &EvalVerdict, channels: &[SlackChannel]) {
     let (icon, label) = match verdict.outcome {
         Outcome::Blocked => (":red_circle:", "Deployment Blocked"),
         Outcome::Warn => (":large_yellow_circle:", "Deployment Warning"),
@@ -36,14 +38,13 @@ pub async fn notify(webhook: &str, verdict: &EvalVerdict) {
 
     let summary = format!("{} *{}* — `{}`", icon, label, repo);
 
-    let detail = format!(
+    let mut detail = format!(
         "*Branch:* `{}`\n*Triggered by:* {}\n*Reason:* {}",
         branch, actor, verdict.reason
     );
 
-    let mut detail_with_approvers = detail;
     if verdict.allow_override && !verdict.override_approvers.is_empty() {
-        detail_with_approvers.push_str(&format!(
+        detail.push_str(&format!(
             "\n*Override approvers:* {}",
             verdict
                 .override_approvers
@@ -54,31 +55,39 @@ pub async fn notify(webhook: &str, verdict: &EvalVerdict) {
         ));
     }
 
-    let payload = SlackPayload {
-        text: format!("{} — {}", label, repo),
-        blocks: vec![
-            SlackBlock {
-                kind: "section".into(),
-                text: Some(SlackText {
-                    kind: "mrkdwn".into(),
-                    text: summary,
-                }),
-            },
-            SlackBlock {
-                kind: "section".into(),
-                text: Some(SlackText {
-                    kind: "mrkdwn".into(),
-                    text: detail_with_approvers,
-                }),
-            },
-        ],
+    let target_channels: Vec<String> = if channels.is_empty() {
+        vec!["#deployments".to_string()]
+    } else {
+        channels.iter().map(|c| c.channel.clone()).collect()
     };
 
     let client = Client::new();
 
-    let result = client.post(webhook).json(&payload).send().await;
+    for channel in target_channels {
+        let payload = SlackPayload {
+            channel: channel.clone(),
+            text: format!("{} — {}", label, repo),
+            blocks: vec![
+                SlackBlock {
+                    kind: "section".into(),
+                    text: Some(SlackText {
+                        kind: "mrkdwn".into(),
+                        text: summary.clone(),
+                    }),
+                },
+                SlackBlock {
+                    kind: "section".into(),
+                    text: Some(SlackText {
+                        kind: "mrkdwn".into(),
+                        text: detail.clone(),
+                    }),
+                },
+            ],
+        };
 
-    if let Err(e) = result {
-        eprintln!("Failed to send Slack notification: {}", e);
+        let result = client.post(webhook).json(&payload).send().await;
+        if let Err(e) = result {
+            eprintln!("Failed to send Slack notification to {}: {}", channel, e);
+        }
     }
 }
