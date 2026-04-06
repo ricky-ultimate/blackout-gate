@@ -67,8 +67,7 @@ export const overrideApi = {
 };
 
 export const keysApi = {
-  list: (orgSlug: string) =>
-    api.get<{ keys: ApiKey[] }>(`/admin/keys/${orgSlug}`),
+  list: () => api.get<{ keys: ApiKey[] }>("/v1/keys"),
   revoke: (keyId: string) =>
-    api.delete<{ revoked: boolean }>(`/admin/keys/${keyId}`),
+    api.delete<{ revoked: boolean }>(`/v1/keys/${keyId}`),
 };

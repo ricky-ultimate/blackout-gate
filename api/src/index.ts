@@ -7,6 +7,7 @@ import { overrideRoutes } from "./routes/override.js";
 import { auditRoutes } from "./routes/audit.js";
 import { adminRoutes } from "./routes/admin.js";
 import { configRoutes } from "./routes/config.js";
+import { keyRoutes } from "./routes/keys.js";
 
 const app = Fastify({ logger: true });
 
@@ -20,6 +21,7 @@ await app.register(evaluateRoutes, { prefix: "/v1" });
 await app.register(overrideRoutes, { prefix: "/v1" });
 await app.register(auditRoutes, { prefix: "/v1" });
 await app.register(configRoutes, { prefix: "/v1" });
+await app.register(keyRoutes, { prefix: "/v1" });
 await app.register(adminRoutes);
 
 app.get("/health", async () => ({ status: "ok" }));

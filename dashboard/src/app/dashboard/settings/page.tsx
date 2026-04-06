@@ -11,10 +11,9 @@ export default function SettingsPage() {
   const key = getApiKey();
   const router = useRouter();
   const [revealed, setRevealed] = useState(false);
-  const [orgSlug, setOrgSlug] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const { mutate: upload, isPending, isSuccess, isError } = useUploadConfig();
-  const { data: keys, isLoading: keysLoading } = useApiKeys(orgSlug);
+  const { data: keys, isLoading: keysLoading } = useApiKeys();
   const { mutate: revoke, isPending: revoking } = useRevokeKey();
 
   function signOut() {
@@ -101,12 +100,6 @@ export default function SettingsPage() {
           <p className="mb-4 text-sm text-zinc-400 leading-relaxed">
             Enter your org slug to view and revoke API keys.
           </p>
-          <input
-            value={orgSlug}
-            onChange={(e) => setOrgSlug(e.target.value)}
-            placeholder="Org slug (e.g. acme-corp)"
-            className="w-full rounded-xl bg-zinc-100/80 px-4 py-3 text-sm text-black placeholder:text-zinc-400 focus:bg-zinc-200/50 focus:outline-none transition-colors mb-4"
-          />
           {keysLoading && (
             <p className="text-sm text-zinc-400">Loading keys...</p>
           )}

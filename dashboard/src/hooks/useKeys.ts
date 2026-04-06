@@ -1,11 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { keysApi } from "@/lib/api";
 
-export function useApiKeys(orgSlug: string) {
+export function useApiKeys() {
   return useQuery({
-    queryKey: ["api-keys", orgSlug],
-    queryFn: () => keysApi.list(orgSlug).then((r) => r.data.keys),
-    enabled: !!orgSlug,
+    queryKey: ["api-keys"],
+    queryFn: () => keysApi.list().then((r) => r.data.keys),
     staleTime: 30_000,
   });
 }
