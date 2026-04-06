@@ -1,19 +1,26 @@
 $ErrorActionPreference = "Stop"
 
+foreach ($var in @("DATABASE_URL", "ADMIN_SECRET")) {
+    if (-not (Test-Path "env:$var")) {
+        Write-Error "$var is not set"
+        exit 1
+    }
+}
+
 docker compose up postgres -d
 
 Set-Location api
 
-$env:DATABASE_URL = "postgresql://postgres:BRNXMNXTTX@localhost:5432/blackout_gate"
-$env:ADMIN_SECRET = "a39b6f72dbe439c6aa77bde8df2f8f5fc2369184245ea4098fd16c2b02ccb704"
-$env:API_URL = "http://localhost:3000"
+if (-not $env:API_URL) {
+    $env:API_URL = "http://localhost:3000"
+}
 
 npx tsx src/db/migrate.ts
 
 $apiJob = Start-Job -ScriptBlock {
     Set-Location $using:PWD
-    $env:DATABASE_URL = "postgresql://postgres:BRNXMNXTTX@localhost:5432/blackout_gate"
-    $env:ADMIN_SECRET = "a39b6f72dbe439c6aa77bde8df2f8f5fc2369184245ea4098fd16c2b02ccb704"
+    $env:DATABASE_URL = $using:env:DATABASE_URL
+    $env:ADMIN_SECRET = $using:env:ADMIN_SECRET
     npm run dev
 }
 
