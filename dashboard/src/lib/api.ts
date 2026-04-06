@@ -65,3 +65,10 @@ export const overrideApi = {
     expires_in_minutes?: number;
   }) => api.post<OverrideToken>("/v1/overrides/issue", body),
 };
+
+export const keysApi = {
+  list: (orgSlug: string) =>
+    api.get<{ keys: ApiKey[] }>(`/admin/keys/${orgSlug}`),
+  revoke: (keyId: string) =>
+    api.delete<{ revoked: boolean }>(`/admin/keys/${keyId}`),
+};

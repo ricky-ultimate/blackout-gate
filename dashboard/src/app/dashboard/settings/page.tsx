@@ -4,15 +4,20 @@ import { useRef, useState } from "react";
 import { getApiKey, clearApiKey } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { useUploadConfig } from "@/hooks/useConfig";
+import { useApiKeys, useRevokeKey } from "@/hooks/useKeys";
+import { ApiKeyTable } from "@/components/ApiKeyTable";
 
 export default function SettingsPage() {
   const key = getApiKey();
   const router = useRouter();
   const [revealed, setRevealed] = useState(false);
+  const [orgSlug, setOrgSlug] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const { mutate: upload, isPending, isSuccess, isError } = useUploadConfig();
+  const { data: keys, isLoading: keysLoading } = useApiKeys(orgSlug);
+  const { mutate: revoke, isPending: revoking } = useRevokeKey();
 
-  function revoke() {
+  function signOut() {
     clearApiKey();
     router.replace("/login");
   }
@@ -22,8 +27,8 @@ export default function SettingsPage() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const yaml = ev.target?.result as string;
-      if (yaml) upload(yaml);
+      const rawYaml = ev.target?.result as string;
+      if (rawYaml) upload(rawYaml);
     };
     reader.readAsText(file);
   }
@@ -51,7 +56,7 @@ export default function SettingsPage() {
             </button>
           </div>
           <p className="mt-3 text-sm text-zinc-400 leading-relaxed">
-            This key is stored securely in your browser's local storage.
+            This key is stored in your browser's local storage.
           </p>
         </div>
 
@@ -90,8 +95,33 @@ export default function SettingsPage() {
         </div>
 
         <div className="pt-8 border-t border-zinc-100">
+          <h2 className="mb-4 text-sm font-medium text-zinc-900">
+            API Key Management
+          </h2>
+          <p className="mb-4 text-sm text-zinc-400 leading-relaxed">
+            Enter your org slug to view and revoke API keys.
+          </p>
+          <input
+            value={orgSlug}
+            onChange={(e) => setOrgSlug(e.target.value)}
+            placeholder="Org slug (e.g. acme-corp)"
+            className="w-full rounded-xl bg-zinc-100/80 px-4 py-3 text-sm text-black placeholder:text-zinc-400 focus:bg-zinc-200/50 focus:outline-none transition-colors mb-4"
+          />
+          {keysLoading && (
+            <p className="text-sm text-zinc-400">Loading keys...</p>
+          )}
+          {keys && (
+            <ApiKeyTable
+              keys={keys}
+              onRevoke={(id) => revoke(id)}
+              revoking={revoking}
+            />
+          )}
+        </div>
+
+        <div className="pt-8 border-t border-zinc-100">
           <button
-            onClick={revoke}
+            onClick={signOut}
             className="rounded-full bg-red-50 px-5 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
           >
             Sign out and remove key
