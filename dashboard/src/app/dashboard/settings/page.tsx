@@ -94,9 +94,9 @@ export default function SettingsPage() {
         </div>
 
         <div className="pt-8 border-t border-zinc-100">
-          <h2 className="mb-4 text-sm font-medium text-zinc-900">
-            API Key Management
-          </h2>
+          <p className="mb-4 text-sm text-zinc-400 leading-relaxed">
+            Manage API keys for your organization.
+          </p>
           <p className="mb-4 text-sm text-zinc-400 leading-relaxed">
             Enter your org slug to view and revoke API keys.
           </p>
