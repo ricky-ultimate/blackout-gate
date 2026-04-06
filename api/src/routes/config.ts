@@ -14,23 +14,6 @@ interface WindowEntry {
   };
 }
 
-interface BlackoutYamlWindow {
-  id: string;
-  name: string;
-  verdict: string;
-  recurrence?: {
-    type: string;
-    start?: string;
-    end?: string;
-    expressions?: string[];
-    duration_minutes?: number;
-  };
-}
-
-interface BlackoutYaml {
-  windows?: BlackoutYamlWindow[];
-}
-
 function parseWindows(yaml: string): WindowEntry[] {
   try {
     const lines = yaml.split("\n");
