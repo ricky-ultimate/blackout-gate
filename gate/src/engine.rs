@@ -104,11 +104,16 @@ pub fn evaluate(
                         recurrence.expressions.as_ref().map_or(false, |exprs| {
                             exprs.iter().any(|expr| {
                                 Schedule::from_str(expr).ok().map_or(false, |schedule| {
-                                    let window_end = now_utc + Duration::minutes(duration);
-                                    schedule.upcoming(tz).take(1).any(|t| {
-                                        t.with_timezone(&Utc) >= now_utc
-                                            && t.with_timezone(&Utc) <= window_end
-                                    })
+                                    let window_duration = Duration::minutes(duration);
+                                    let lookback = now_utc - window_duration;
+                                    schedule
+                                        .after(&lookback)
+                                        .take_while(|t| t.with_timezone(&Utc) <= now_utc)
+                                        .any(|t| {
+                                            let start = t.with_timezone(&Utc);
+                                            let end = start + window_duration;
+                                            now_utc >= start && now_utc <= end
+                                        })
                                 })
                             })
                         })
